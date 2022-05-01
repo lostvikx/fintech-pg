@@ -3,7 +3,7 @@ import urllib.request as ur
 import pandas as pd
 from time import sleep
 
-# TODO: Change the directory
+# Change the directory
 
 # URL for Yahoo Finance website
 def generate_url(ticker):
@@ -17,7 +17,7 @@ def generate_url(ticker):
   url_is = f"https://finance.yahoo.com/quote/{ticker}/financials?p={ticker}"
   url_bs = f"https://finance.yahoo.com/quote/{ticker}/balance-sheet?p={ticker}"
 
-  return [url_is, url_bs]
+  return (url_is, url_bs)
 
 
 # fetch the entire html file of the url
@@ -126,12 +126,10 @@ def create_csv_file(df, file_name):
 
 def main():
   # Change these to custom tickers!
-
   # tickers = ["INFY.NS", "MINDTREE.NS", "TCS.NS"]
   tickers = ["AMD", "NFLX", "TSLA"]
 
   for tick in tickers:
-
     [tick_is, tick_bs] = generate_url(tick)
 
     # Income Statement
@@ -140,7 +138,7 @@ def main():
     create_csv_file(df=is_df, file_name=f"{tick}_IS")
 
     # Balance Sheet
-    sleep(2) # Prevent from getting ban!
+    sleep(2) # Prevent from getting IP blocked (rate-limiting)!
     bs_data = fetch_data(url=tick_bs)
     bs_df = create_df(data=bs_data)
     create_csv_file(df=bs_df, file_name=f"{tick}_BS")
