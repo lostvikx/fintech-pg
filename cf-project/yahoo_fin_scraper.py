@@ -1,9 +1,7 @@
-from curses import meta
 from bs4 import BeautifulSoup
 import urllib.request as req
 import pandas as pd
 from time import sleep
-import sys
 import argparse
 
 # Change the directory
@@ -36,9 +34,10 @@ def fetch_data(url):
   try:
     read_data = req.urlopen(req.Request(url, headers={'User-Agent': 'Mozilla/5.0'})).read()
   except:
-    print("error")
+    print(f"Couldn't fetch {url}")
+    print("Please check your internet connecion!")
     exit()
-    
+
   return read_data
 
 
@@ -132,16 +131,22 @@ def create_csv_file(df, file_name):
     print(f"Pass: {file_name} was saved!")
 
 
-def main():
-
-  parser = argparse.ArgumentParser(description="Fetch the Balance Sheet & Income Statement for any listed company using its ticker, powered by Yahoo Finance.")
+def parse_args():
+  parser = argparse.ArgumentParser(description="Fetch the Balance Sheet & Income Statement for any listed company using its ticker, powered by Yahoo Finance.", epilog="Hope this program helps! :D")
 
   # parser.add_argument("-t", "--ticker", type=str, help="a ticker symbol of a company")
 
   parser.add_argument("ticker_list", nargs="+", help="a list of tickers", type=str)
 
   args = parser.parse_args()
-  tickers = args.ticker_list
+
+  return args
+
+
+def main():
+  
+  tickers = [tick.upper() for tick in parse_args().ticker_list]
+  print(f"Company Tickers: {tickers}")
 
   # Change these to custom tickers!
   # tickers = ["INFY.NS", "MINDTREE.NS", "TCS.NS"]
