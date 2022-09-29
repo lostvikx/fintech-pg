@@ -2,9 +2,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 # %%
 dt = pd.read_csv("datasets/Salary_Data.csv")
@@ -58,3 +59,55 @@ plt.title("Salary vs Experience (Test)")
 plt.xlabel("Years of Experience")
 plt.ylabel("Salary")
 plt.show()
+
+# %%
+dt = pd.read_csv("datasets/Salary_Data.csv")
+X = dt.iloc[:,:-1].values  # yrs_exp
+y = dt.iloc[:,1:].values  # salary
+
+#%%
+ploy_reg = PolynomialFeatures(degree=4)
+# Transform X to X_poly
+X_poly = ploy_reg.fit_transform(X)
+# ploy_reg.fit(X_poly,y)
+
+reg = LinearRegression()
+reg.fit(X,y)
+lin_reg = LinearRegression()
+lin_reg.fit(X_poly,y)
+
+# print(lin_reg.coef_)
+print("y-intercept:", lin_reg.intercept_)
+
+# %%
+plt.scatter(X,y,color="red")
+plt.plot(X,reg.predict(X))
+plt.title("Linear Regression")
+plt.show()
+
+# %%
+plt.scatter(X,y,color="red")
+plt.plot(X,lin_reg.predict(ploy_reg.fit_transform(X)),color="blue")
+plt.title("Polynomial Regression")
+plt.show()
+
+# %%
+def create_poly_plot(degree, X, y):
+  ploy_reg = PolynomialFeatures(degree)
+  # Transform X to X_poly
+  X_poly = ploy_reg.fit_transform(X)
+  # ploy_reg.fit(X_poly,y)
+
+  reg = LinearRegression()
+  reg.fit(X,y)
+  lin_reg = LinearRegression()
+  lin_reg.fit(X_poly,y)
+
+  plt.scatter(X,y,color="red")
+  plt.plot(X,lin_reg.predict(ploy_reg.fit_transform(X)),color="blue")
+  plt.title(f"Polynomial Regression of degree {degree}")
+  plt.show()
+
+# %%
+# Degree of 4 looks like a great fit
+create_poly_plot(4,X,y)
