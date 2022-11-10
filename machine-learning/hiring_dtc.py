@@ -33,7 +33,7 @@ classifier = DecisionTreeClassifier()
 classifier.fit(x,y)
 
 #%%
-test = pd.DataFrame(columns=x.columns,data=[[1,0,2,0,1,1],[3,1,3,0,0,1]])
+test = pd.DataFrame(columns=x.columns,data=[[1,0,1,0,0,1],[3,1,3,0,0,1],[3,1,3,1,0,1],[3,0,3,1,0,1]])
 test
 
 #%%
