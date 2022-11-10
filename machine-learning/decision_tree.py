@@ -27,7 +27,7 @@ x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 #%%
-# Can eb entropy or gini
+# Can be entropy or gini
 classifier = DecisionTreeClassifier(criterion="entropy",random_state=0)
 classifier.fit(x_train,y_train)
 

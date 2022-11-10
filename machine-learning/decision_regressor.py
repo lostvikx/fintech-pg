@@ -21,7 +21,16 @@ y_pred = regressor.predict([[2.5]])
 y_pred
 
 #%%
-x_grid = np.arange(min(x),max(x),0.01)
+# x_grid = np.arange(min(x),max(x),0.01)
 # x_grid = x_grid.reshape((len(x_grid),1))
 # plt.scatter(x,y,color="red")
 # plt.plot(x,regressor.predict(x_grid))
+
+# %%
+from sklearn.ensemble import RandomForestRegressor
+reg2 = RandomForestRegressor(n_estimators=10)
+
+#%%
+reg2.fit(x,y)
+y_pred2 = reg2.predict([[2.5]])
+y_pred2
