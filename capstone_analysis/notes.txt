@@ -1,0 +1,37 @@
+Data collection using twitter web-scraping be script in twitter.py file. Uses snscrape module to search of tweets using a specific keyword, "crypto" in this case.
+
+The parameters for selecting tweets:
+* tweet must be made in the last 6 months
+* minimum favorites (likes) must be greater than 200
+
+Created a .csv file with variables: "user_name", "date", "likes","retweets", "content", and "hashtags".
+
+Data cleaning: Clean the content of the tweets, by removing emojis and special characters like # for hashtags and @ for mentions.
+
+Using the testblob module, which is an API abstraction of NLTK (Natural Language Took Kit) used for Natural Language Processing. We use this framework to analyze sentiments, technically the polarity of the text.
+
+Sentiment analysis can be nicely summarized into to variables, which are subjectivity and polarity.
+
+Subjectivity: aims to detect factual or neutral content from the text input. Factual text is free of opinion and bias, while neutral text signifies opinionated text.
+
+Polarity: aims to detect positive, negative, and neutral text, but it can also go as far as to detect specific feelings and emotions like angry, sad, urgent, etc.
+
+Subjectivity of a tweet is given a score from 0 to 1 and polarity scores are given in the range from -1 to 1. 
+
+Subjectivity near 0 shows objective or factual, while near 1 shows subjective or opinions.
+
+Here is the descriptive summary of the polarity scores of the tweets:
+
+The following code block specifies the threshold to assign categories to the polarity data. If the score is greater than 0.25 we categorize it as a positive tweet, if less than 0.15 we categorize it as a negative tweet. If the score is between 0.15 and 0.25, then we tag it as a neutral tweet.
+
+The following scatter plot showcases the relationship between the two variables polarity and subjectivity of the content of the tweets. A scatter plot helps us understand the effect of one variable on the other one.
+
+Using the graphical representation we can interpret that as the subjectity of the tweet increases, the variablity or spread of the polarity increases. This suggests that if a tweet is more opinionated, personal, or informal, our machine learning model manages to classifies it as having polarity or a certain undertone that provides the basis for sentiment analysis.
+
+Note: Idea! Let's take the most subjective tweets and then do our classification.
+
+The following bar plot shows the frequency or count of the categorical variable sentiment. As mentioned earlier, I have categorized the the polarity variable as either positive, negative, or neutral.
+
+The following pie plot and relative frequency table further suggests the significantly large proportion of the sample data consists of negative sentiments of decentralized or blockchain-enabled products or services the current social environment.
+
+The following diagram (Word Cloud) represents the most frequent words found in our dataset of tweets, larger size of text in the diagram means higher frequency.
