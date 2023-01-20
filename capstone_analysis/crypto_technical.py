@@ -198,14 +198,23 @@ x_train.shape
 # * Target variable: 51th close price
 # %%
 from keras.models import Sequential
-from keras.layers import Dense, LSTM
+from keras.layers import Dense, LSTM, Dropout
 
 # Building the LSTM model
 model = Sequential()
-model.add(LSTM(128,return_sequences=True,input_shape=(x_train.shape[1],1)))
-model.add(LSTM(64,return_sequences=False))
-model.add(Dense(25))
-model.add(Dense(1))
+model.add(LSTM(units=64,return_sequences=True,input_shape=(x_train.shape[1],1)))
+model.add(Dropout(rate=0.2))
+
+model.add(LSTM(units=64,return_sequences=True))
+model.add(Dropout(rate=0.2))
+
+model.add(LSTM(units=64,return_sequences=True))
+model.add(Dropout(rate=0.2))
+
+model.add(LSTM(units=64,return_sequences=False))
+model.add(Dropout(rate=0.2))
+
+model.add(Dense(units=1))
 
 # Compile the model
 model.compile(optimizer="adam",loss="mean_squared_error")
@@ -218,7 +227,7 @@ model.compile(optimizer="adam",loss="mean_squared_error")
 #
 # The model is then compiled with the Adam optimizer and mean squared error (MSE) loss function. This means that the model will be trained to minimize the MSE between the predicted values and the true values in the training data.
 # %%
-model.fit(x_train,y_train,epochs=1,batch_size=1)
+model.fit(x_train,y_train,epochs=10,batch_size=32)
 # %% [markdown]
 # Few general guidelines for LSTM parameters:
 # 
@@ -235,7 +244,7 @@ model.fit(x_train,y_train,epochs=1,batch_size=1)
 # epochs:
 # * The number of times the model will cycle through the data. One epoch is when an entire dataset is passed forward and backward through the neural network only once.
 # * Typically, a larger number of epochs is used to train the model, like 10 or 20, to allow the model to learn from more examples.
-# * In our case, we use `epoch = 1` for as this can be computationally expensive.
+# * In our case, we use `epoch = 2` for as this can be computationally expensive.
 # %%
 test_data = scaled_data[train_data_len-50:]
 x_test = []
@@ -277,3 +286,55 @@ plt.show()
 # %% [markdown]
 # ### Why LSTM?
 # Recurrent Neural Networks (RNNs) are a type of neural network that allows for information to be passed from one step of the network to the next. LSTM (Long Short-Term Memory) is a specific type of RNN that is able to effectively learn and retain long-term dependencies by using gates to control the flow of information. These gates can be thought of as switches that determine whether to let new information in, or to keep previous information stored. This allows LSTMs to better handle tasks that require remembering previous events, such as language translation, speech recognition, stock price prediction.
+#
+# ### Let's try to forcast future prices 
+# %%
+# Last 50 close prices
+latest = scaled_data[-50:]
+latest = np.reshape(latest,(latest.shape[1],latest.shape[0],1))
+print("latest shape:",latest.shape)
+
+predict = None
+new = np.copy(latest)
+combined = np.copy(new)
+all_preds = np.array([[np.nan]])
+n_days = 50
+
+# Predict for the next 50 days
+# TODO: Try creating somthing like above for the last 50 days. Shape: (50,50,1)
+for i in range(n_days):
+  predict = model.predict(new)
+  all_preds = np.append(all_preds,predict,axis=0)
+  predict = np.transpose(predict)
+  predict = np.reshape(predict,(predict.shape[0],predict.shape[1],1))
+
+  new = np.append(new,predict,axis=1)
+  new = np.delete(new,0,axis=1)
+  combined = np.append(combined,new,axis=0)
+
+print("combined shape:",combined.shape)
+# print(all_preds)
+all_preds = all_preds[~np.isnan(all_preds)]
+all_preds = all_preds.reshape(-1, 1)
+print("Days predicted:",len(all_preds))
+# %%
+forecast = scaler.inverse_transform(all_preds)
+forecast.shape
+# %%
+future = pd.DataFrame(forecast,columns=["pred"])
+# %%
+days = pd.date_range(start="2023-01-20",periods=len(future),freq="D")
+future = future.set_index(days)
+future.head()
+# %%
+plt.figure(figsize=(17,6))
+plt.plot(train["close"])
+plt.plot(valid[["close","predicted"]])
+plt.plot(future["pred"])
+
+plt.title("LSTM Model Forecast")
+plt.xlabel("Date")
+plt.ylabel("Close Price ($)")
+
+plt.legend(["Train","Validate","Predicted","Forecast"])
+plt.show()
