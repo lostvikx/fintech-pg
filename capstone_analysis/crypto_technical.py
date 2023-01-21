@@ -142,7 +142,7 @@ plt.show()
 # %% [markdown]
 # This shows that ETH is a high risk or more volatile cryptocurrency than BTC, but also provides higher returns. Higher the risk, higher the expected return.
 #
-# ## Deep Learning for Crypto price prediction
+# ## Deep Learning for Crypto Price Prediction
 # There are several machine learning models that can be used to predict stock prices. One such model is Long Short-Term Memory (LSTM). 
 # 
 # The LSTM (Long Short-Term Memory) layers are a type of recurrent neural network (RNN) that are commonly used for time series data, like stock prices.
@@ -163,7 +163,7 @@ btc_close = btc_df[["close"]]
 data = btc_close.values
 print(f"Data shape: {data.shape}")
 # 80% train & 20% test dataset
-train_data_len = int(len(data) * 0.80)
+train_data_len = int(len(data) * 0.95)
 print(f"Train data len: {train_data_len}")
 # %% [markdown]
 # Transform features by scaling each feature to a given range. Commonly the feature range is from 0 to 1. This helps optimize the data, for faster algorithm runtime.
@@ -198,36 +198,20 @@ x_train.shape
 # * Target variable: 51th close price
 # %%
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
+from keras.layers import Dense, LSTM, Input
+from keras.optimizers import Adam
 
 # Building the LSTM model
-model = Sequential()
-model.add(LSTM(units=64,return_sequences=True,input_shape=(x_train.shape[1],1)))
-model.add(Dropout(rate=0.2))
-
-model.add(LSTM(units=64,return_sequences=True))
-model.add(Dropout(rate=0.2))
-
-model.add(LSTM(units=64,return_sequences=True))
-model.add(Dropout(rate=0.2))
-
-model.add(LSTM(units=64,return_sequences=False))
-model.add(Dropout(rate=0.2))
-
-model.add(Dense(units=1))
+model = Sequential([Input((x_train.shape[1],1)),LSTM(units=64),Dense(units=32,activation="relu"),Dense(units=32,activation="relu"),Dense(units=1)])
 
 # Compile the model
-model.compile(optimizer="adam",loss="mean_squared_error")
+model.compile(optimizer=Adam(learning_rate=0.001),loss="mean_squared_error",metrics="mean_absolute_error")
 # %% [markdown]
-# The first LSTM layer has 128 units and the input shape is taken from `x_train.shape[1]` and it has return_sequences=True which is used to connect with next LSTM layer.
-#
-# The second LSTM layer has 64 units and return_sequences is set to False which means it is the last layer of the LSTM network.
-#
-# The first dense layer has 25 units and the last dense layer has 1 unit. This architecture is used for regression problem.
+# The first two dense layer has 32 units and the last dense layer has 1 unit. This architecture is used for regression problem.
 #
 # The model is then compiled with the Adam optimizer and mean squared error (MSE) loss function. This means that the model will be trained to minimize the MSE between the predicted values and the true values in the training data.
 # %%
-model.fit(x_train,y_train,epochs=10,batch_size=32)
+model.fit(x_train,y_train,epochs=20)
 # %% [markdown]
 # Few general guidelines for LSTM parameters:
 # 
@@ -244,7 +228,7 @@ model.fit(x_train,y_train,epochs=10,batch_size=32)
 # epochs:
 # * The number of times the model will cycle through the data. One epoch is when an entire dataset is passed forward and backward through the neural network only once.
 # * Typically, a larger number of epochs is used to train the model, like 10 or 20, to allow the model to learn from more examples.
-# * In our case, we use `epoch = 2` for as this can be computationally expensive.
+# * In our case, we use `epoch=10` for as this can be computationally expensive.
 # %%
 test_data = scaled_data[train_data_len-50:]
 x_test = []
@@ -289,8 +273,9 @@ plt.show()
 #
 # ### Let's try to forcast future prices 
 # %%
-# Last 50 close prices
-latest = scaled_data[-50:]
+# Predict for the next 25 days
+n_days = 25
+latest = scaled_data[-n_days:]
 latest = np.reshape(latest,(latest.shape[1],latest.shape[0],1))
 print("latest shape:",latest.shape)
 
@@ -298,10 +283,7 @@ predict = None
 new = np.copy(latest)
 combined = np.copy(new)
 all_preds = np.array([[np.nan]])
-n_days = 50
 
-# Predict for the next 50 days
-# TODO: Try creating somthing like above for the last 50 days. Shape: (50,50,1)
 for i in range(n_days):
   predict = model.predict(new)
   all_preds = np.append(all_preds,predict,axis=0)
@@ -313,16 +295,16 @@ for i in range(n_days):
   combined = np.append(combined,new,axis=0)
 
 print("combined shape:",combined.shape)
-# print(all_preds)
 all_preds = all_preds[~np.isnan(all_preds)]
+# all_preds = model.predict(combined)
 all_preds = all_preds.reshape(-1, 1)
+
 print("Days predicted:",len(all_preds))
 # %%
 forecast = scaler.inverse_transform(all_preds)
 forecast.shape
 # %%
 future = pd.DataFrame(forecast,columns=["pred"])
-# %%
 days = pd.date_range(start="2023-01-20",periods=len(future),freq="D")
 future = future.set_index(days)
 future.head()
@@ -338,3 +320,16 @@ plt.ylabel("Close Price ($)")
 
 plt.legend(["Train","Validate","Predicted","Forecast"])
 plt.show()
+# %%
+plt.figure(figsize=(17,6))
+plt.plot(valid[["close","predicted"]])
+plt.plot(future["pred"])
+
+plt.title("LSTM Model Forecast")
+plt.xlabel("Date")
+plt.ylabel("Close Price ($)")
+
+plt.legend(["Validate","Predicted","Forecast"])
+plt.show()
+# %% [markdown]
+# Our LSTM model predicts that the price of BTC will keep on rising as the current trend suggests. Also, after 25 days the trend might reverse as the forcast curve is flat towards the end.
