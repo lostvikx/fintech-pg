@@ -267,6 +267,24 @@ plt.ylabel("Close Price ($)")
 
 plt.legend(["Train","Validate","Predicted"])
 plt.show()
+# %%
+plt.figure(figsize=(17,6))
+plt.plot(valid[["close","predicted"]])
+
+plt.title("LSTM Model Forecast")
+plt.xlabel("Date")
+plt.ylabel("Close Price ($)")
+
+plt.legend(["Validate","Predicted"])
+plt.show()
+# %%
+valid["error"] = valid["close"] - valid["predicted"]
+valid.head()
+# %%
+sns.histplot(data=valid,x="error",kde=True)
+plt.title("Error Distribution")
+
+plt.show()
 # %% [markdown]
 # ### Why LSTM?
 # Recurrent Neural Networks (RNNs) are a type of neural network that allows for information to be passed from one step of the network to the next. LSTM (Long Short-Term Memory) is a specific type of RNN that is able to effectively learn and retain long-term dependencies by using gates to control the flow of information. These gates can be thought of as switches that determine whether to let new information in, or to keep previous information stored. This allows LSTMs to better handle tasks that require remembering previous events, such as language translation, speech recognition, stock price prediction.
